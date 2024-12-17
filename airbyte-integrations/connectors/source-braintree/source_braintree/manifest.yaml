@@ -9746,10 +9746,6 @@ streams:
           type: BasicHttpAuthenticator
           password: "{{ config['private_key'] }}"
           username: "{{ config['public_key'] }}"
-        request_body_json:
-          search:
-            created_at:
-              min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -9766,15 +9762,35 @@ streams:
           page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1W
       cursor_field: created_at
       datetime_format: "%Y-%m-%d %H:%M:%S"
       cursor_datetime_formats:
         - "%Y-%m-%d %H:%M:%S"
         - "%Y-%m-%dT%H:%M:%S"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: search
+        parameters:
+          created_at:
+            min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
+        inject_into: body_json
+      end_time_option:
+        type: RequestOption
+        field_name: search
+        parameters:
+          created_at:
+            max: "{{ format_datetime(stream_interval.end_time, '%Y-%m-%d %H:%M:%S %z') }}"
+        inject_into: body_json
+      cursor_granularity: P1M
   - type: DeclarativeStream
     name: subscription_stream
     primary_key:
