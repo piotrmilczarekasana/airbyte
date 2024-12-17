@@ -9782,15 +9782,9 @@ streams:
         parameters:
           search:
             created_at:
-              min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
-        inject_into: body_json
-      end_time_option:
-        type: RequestOption
-        field_name: search
-        parameters:
-          search:
-            created_at:
-              max: "{{ format_datetime(stream_interval.end_time, '%Y-%m-%d %H:%M:%S %z') }}"
+              between:
+                min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
+                max: "{{ format_datetime(stream_interval.end_time, '%Y-%m-%d %H:%M:%S %z') }}"
         inject_into: body_json
       cursor_granularity: P1M
   - type: DeclarativeStream
